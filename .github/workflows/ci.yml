@@ -1,0 +1,30 @@
+name: Tracker CI
+on:
+  pull_request:
+  push:
+    branches: [master]
+permissions:
+  contents: read
+jobs:
+  test-build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '8'
+      - name: Test all tracker classes and package
+        run: mvn -B '-Dtest=Test*,*Tests' package
+      - name: Verify test execution
+        run: |
+          python3 - <<'PY'
+          import pathlib, xml.etree.ElementTree as E
+          reports = list(pathlib.Path('target/surefire-reports').glob('TEST-*.xml'))
+          suites = [E.parse(p).getroot() for p in reports]
+          assert sum(int(s.get('tests', 0)) for s in suites) >= 19, 'Expected at least 19 tracker tests'
+          assert not any(int(s.get(k, 0)) for s in suites for k in ('failures', 'errors', 'skipped'))
+          PY
