@@ -21,6 +21,7 @@ import com.virtualpairprogrammers.tracker.domain.VehiclePosition;
  * to a K8S cluster.
  */
 @Repository
+@Profile({"production-microservice", "local-microservice", "aws", "default"})
 public class DataMongoDbImpl implements Data {
 
 	@Autowired
