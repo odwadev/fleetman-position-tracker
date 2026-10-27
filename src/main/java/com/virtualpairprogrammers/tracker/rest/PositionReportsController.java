@@ -38,9 +38,17 @@ public class PositionReportsController
 	}
 
 	@RequestMapping(method=RequestMethod.GET, value="/history/{vehicleName}")
-	public Collection<VehiclePosition> getEntireHistoryForVehicle(@PathVariable String vehicleName) throws VehicleNotFoundException
+	public ResponseEntity<Collection> getEntireHistoryForVehicle(@PathVariable String vehicleName)
 	{
-		return this.data.getHistoryFor(vehicleName);
+		try
+		{
+			Collection<VehiclePosition> positions = this.data.getHistoryFor(vehicleName);
+			return new ResponseEntity<Collection>(positions, HttpStatus.OK);
+		}
+		catch (VehicleNotFoundException e)
+		{
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
 	}
 
 	@RequestMapping(method=RequestMethod.GET, value="/vehicles/")
